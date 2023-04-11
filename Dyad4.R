@@ -65,7 +65,7 @@ head(df4_cor_new)
 library(dplyr)
 
 # Extract only correlations from 'df4_cor_new' in which the absolute value of 
-# the correlation between Arousal.x is at least 0.40 or below -0.40:
+# the correlations for Arousal.x is at least 0.40 or below -0.40:
 
 Cor_Arous <- df4_cor_new %>% filter(Arousal.x > 0.4 | Arousal.x < -0.4)
 
