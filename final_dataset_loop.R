@@ -113,14 +113,16 @@ for (pair in 1:npairs){
 ## (5) Generates final_dataset:
 
 # final_dataset -----------------------------------------------------------
+
 colnames(final_dataset)<-final_variables
 print(final_dataset)
 
-# read excell data and merge it by pairs:
+## add dataset 1:
+# read excel data and merge it by pairs:
 survey <- read_excel ("Survey_Stats.xlsx", sheet =3, skip = 1)
-final_dataset <- merge(final_dataset,survey,by="Dyad")
+# final_dataset <- merge(final_dataset,survey,by="Dyad")
 
-# read excell data and merge it individually (A and B role):
+# read excel data and merge it individually (A and B role):
 survey_role <- read_excel ("Survey_Stats.xlsx", sheet =1, skip = 1)
 survey_role$role <- substr(survey_role$ID, nchar(survey_role$ID), nchar(survey_role$ID))
 vv <-names(survey_role)
@@ -136,6 +138,46 @@ subtable<- subtable %>%
   tidyr::pivot_wider(names_from = role, values_from = c(Outcome, Self, Process, Relationship))
 
 # merge new data in a the final dataset
+final_dataset <- merge(final_dataset,subtable,by="Dyad")
+
+## add dataset 2 (Hur väl kände du din motspelare sen tidigare?):
+survey <- read_excel ("Stats SPEC.xlsx", sheet =3, skip = 0)
+vv <-names(survey)
+survey <- subset (survey, select =c(vv[3],vv[4],vv[30]))
+survey$role <- substr(survey$ID, nchar(survey$ID), nchar(survey$ID))
+# reshape data 
+colnames(survey)<-c("ID", "Dyad", "How well_mean", "role" )
+survey <- na.omit(survey)
+survey<- select(survey, "Dyad", "How well_mean" )
+final_dataset <- merge(final_dataset,survey,by="Dyad")
+
+## add dataset 3 (means):
+survey <- read_excel ("Stats SPEC.xlsx", sheet =1, skip = 0)
+vv <-names(survey)
+survey <- subset (survey, select =c(vv[2],vv[25],vv[26]))
+colnames(survey)<-c( "Dyad", "diference", "mean" )
+survey <- na.omit(survey)
+final_dataset <- merge(final_dataset,survey,by="Dyad")
+
+## add dataset 4 (dimensions):
+survey <- read_excel ("Stats SPEC.xlsx", sheet =3, skip = 1)
+vv <- names (survey)
+survey$role <- substr(survey$ID, nchar(survey$ID), nchar(survey$ID))
+survey$Dyad <- substr(survey$ID, 1, nchar(survey$ID) - 1)
+survey <-select(survey, -1)
+
+colnames(survey)<-c( "Expression_self", "Identification_self",
+                     "Understanding_self", "Regulation_self", "Use_self",
+                     "Expression_others","Identification_others",
+                     "Understanding_others","Regulation_others","Use_others",
+                     "role", "Dyad")
+
+subtable<- survey[order(survey$Dyad, survey$role),]
+subtable <- subtable %>%
+  tidyr::pivot_wider(names_from = role, values_from = c(Expression_self, Identification_self, Understanding_self, Regulation_self,
+                                                        Use_self, Expression_others, Identification_others, Understanding_others,
+                                                        Regulation_others, Use_others))
+
 final_dataset <- merge(final_dataset,subtable,by="Dyad")
 
 
